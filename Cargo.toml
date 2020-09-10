@@ -1,0 +1,16 @@
+[package]
+name = "gymnarium_visualisers_base"
+version = "0.1.0"
+
+description = "The visualisers base crate for the gymnarium libraries used for creating visualisations for reinforcement environments"
+keywords = ["gym", "reinforcement", "learning", "visualisation"]
+
+repository = "https://github.com/tiquthon/gymnarium_visualisers_base"
+authors = ["Thimo Neumann <tiquthon@gmail.com>"]
+
+edition = "2018"
+license = "MIT"
+
+[dependencies]
+serde = "1.0.115"
+serde_derive = "1.0.115"
