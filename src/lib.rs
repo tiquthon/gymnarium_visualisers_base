@@ -646,13 +646,13 @@ impl Transformation2D {
 }
 
 impl Transformation2D {
-    pub fn rotation_around_position(center_positon: &Position2D, rotation_position: &Position2D, angle: f64) -> Self {
+    pub fn rotation_around_position(rotation_position: &Position2D, angle: f64) -> Self {
         Self::composition(
             "RotationAroundPosition".to_string(),
             vec![
-                Self::translation(rotation_position.vector_to(&center_positon)),
+                Self::translation(rotation_position.vector_to(&Position2D::zero())),
                 Self::rotation(angle),
-                Self::translation(center_positon.vector_to(&rotation_position)),
+                Self::translation(Position2D::zero().vector_to(&rotation_position)),
             ]
         )
     }
@@ -1190,30 +1190,29 @@ impl Geometry2D {
     pub fn minimum_position_in_transformed_bounding_box(&self) -> Position2D {
         self.conditional_position_in_transformed_bounding_box(|a, b| Position2D::with(
             a.x.min(b.x), a.y.min(b.y),
-        ))
+        )).unwrap_or_else(|| Position2D::with(std::f64::MAX, std::f64::MAX))
     }
 
     pub fn maximum_position_in_transformed_bounding_box(&self) -> Position2D {
         self.conditional_position_in_transformed_bounding_box(|a, b| Position2D::with(
             a.x.max(b.x), a.y.max(b.y),
-        ))
+        )).unwrap_or_else(|| Position2D::with(std::f64::MIN, std::f64::MIN))
     }
 
-    fn conditional_position_in_transformed_bounding_box<F: Fn(Position2D, Position2D) -> Position2D>(&self, merge_two_positions: F) -> Position2D {
+    fn conditional_position_in_transformed_bounding_box<F: Fn(Position2D, Position2D) -> Position2D + Copy>(&self, merge_two_positions: F) -> Option<Position2D> {
         match self {
-            Self::Point { position, transformations, .. } => position.transform(transformations),
-            Self::Line { points, transformations, .. } => merge_two_positions(
+            Self::Point { position, transformations, .. } => Some(position.transform(transformations)),
+            Self::Line { points, transformations, .. } => Some(merge_two_positions(
                 points[0].transform(transformations),
                 points[1].transform(transformations),
-            ),
+            )),
             Self::Polyline { points, transformations, .. } => points.iter()
                 .map(|a| a.transform(transformations))
-                .fold_first(merge_two_positions)
-                .unwrap_or_else(|| Position2D::with(std::f64::MAX, std::f64::MAX)),
-            Self::Triangle { points, transformations, .. } => merge_two_positions(
+                .fold_first(merge_two_positions),
+            Self::Triangle { points, transformations, .. } => Some(merge_two_positions(
                 merge_two_positions(points[0].transform(transformations), points[1].transform(transformations)),
                 points[2].transform(transformations)
-            ),
+            )),
             Self::Square { center_position, edge_length, transformations, .. } => [
                 *center_position - Vector2D::with(edge_length / 2f64, edge_length / 2f64),
                 *center_position - Vector2D::with(-edge_length / 2f64, edge_length / 2f64),
@@ -1222,8 +1221,7 @@ impl Geometry2D {
             ]
                 .iter()
                 .map(|a| a.transform(transformations))
-                .fold_first(merge_two_positions)
-                .unwrap_or_else(|| Position2D::with(std::f64::MAX, std::f64::MAX)),
+                .fold_first(merge_two_positions),
             Self::Rectangle { center_position, size, transformations, .. } => [
                 *center_position - Vector2D::with(size.width / 2f64, size.height / 2f64),
                 *center_position - Vector2D::with(-size.width / 2f64, size.height / 2f64),
@@ -1232,22 +1230,19 @@ impl Geometry2D {
             ]
                 .iter()
                 .map(|a| a.transform(transformations))
-                .fold_first(merge_two_positions)
-                .unwrap_or_else(|| Position2D::with(std::f64::MAX, std::f64::MAX)),
+                .fold_first(merge_two_positions),
             Self::Polygon { points, transformations, .. } => points.iter()
                 .map(|a| a.transform(transformations))
-                .fold_first(merge_two_positions)
-                .unwrap_or_else(|| Position2D::with(std::f64::MAX, std::f64::MAX)),
+                .fold_first(merge_two_positions),
             Self::Circle { center_position, radius, transformations, .. } => [
-                *center_position - Vector2D::with(radius / 2f64, radius / 2f64),
-                *center_position - Vector2D::with(-radius / 2f64, radius / 2f64),
-                *center_position - Vector2D::with(-radius / 2f64, -radius / 2f64),
-                *center_position - Vector2D::with(radius / 2f64, -radius / 2f64),
+                *center_position - Vector2D::with(*radius, *radius),
+                *center_position - Vector2D::with(-*radius, *radius),
+                *center_position - Vector2D::with(-*radius, -*radius),
+                *center_position - Vector2D::with(*radius, -*radius),
             ]
                 .iter()
                 .map(|a| a.transform(transformations))
-                .fold_first(merge_two_positions)
-                .unwrap_or_else(|| Position2D::with(std::f64::MAX, std::f64::MAX)),
+                .fold_first(merge_two_positions),
             Self::Ellipse { center_position, size, transformations, .. } => [
                 *center_position - Vector2D::with(size.width / 2f64, size.height / 2f64),
                 *center_position - Vector2D::with(-size.width / 2f64, size.height / 2f64),
@@ -1256,12 +1251,12 @@ impl Geometry2D {
             ]
                 .iter()
                 .map(|a| a.transform(transformations))
-                .fold_first(merge_two_positions)
-                .unwrap_or_else(|| Position2D::with(std::f64::MAX, std::f64::MAX)),
+                .fold_first(merge_two_positions),
             Self::Group(geometries) => geometries.iter()
-                .map(|geometry| geometry.minimum_position_in_transformed_bounding_box())
-                .fold_first(merge_two_positions)
-                .unwrap_or_else(|| Position2D::with(std::f64::MAX, std::f64::MAX)),
+                .map(|geometry| geometry.conditional_position_in_transformed_bounding_box(merge_two_positions))
+                .filter(|position| position.is_some())
+                .map(|position| position.unwrap())
+                .fold_first(merge_two_positions),
         }
     }
 }
@@ -1553,10 +1548,8 @@ impl Geometry2D {
     }
 
     pub fn rotate_around(self, rotate_position: &Position2D, degree: f64) -> Self {
-        let center_position_of_bounding_box = self.center_position_of_bounding_box();
         self.append_transformation(
             Transformation2D::rotation_around_position(
-                &center_position_of_bounding_box,
                 rotate_position,
                 degree
             )
