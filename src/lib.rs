@@ -1728,7 +1728,8 @@ pub trait DrawableEnvironment {
 /// Trait for drawable environments providing functions returning two dimensional geometries.
 pub trait TwoDimensionalDrawableEnvironment<EnvironmentError: Error> : DrawableEnvironment {
     fn draw_two_dimensional(&self) -> Result<Vec<Geometry2D>, EnvironmentError>;
-    fn preferred_view(&self) -> Result<(Viewport2D, Viewport2DModification), EnvironmentError>;
+    fn preferred_view(&self) -> Option<(Viewport2D, Viewport2DModification)>;
+    fn preferred_background_color(&self) -> Option<Color>;
 }
 
 /* --- --- --- ThreeDimensionalDrawableEnvironment --- --- --- */
