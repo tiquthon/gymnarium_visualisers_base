@@ -999,6 +999,32 @@ pub struct Transformations3D {
     pub transformations: Vec<Transformation3D>,
 }
 
+/* --- --- --- LineShape --- --- --- */
+
+/// The shape of a Line or Polyline.
+#[derive(Debug,Clone,PartialEq)]
+pub enum LineShape {
+    /// Square edges
+    Square,
+    /// Round edges
+    Round,
+    /// Bevel edges
+    Bevel
+}
+
+/* --- --- --- CornerShape --- --- --- */
+
+/// The shape of corners.
+#[derive(Debug,Clone,PartialEq)]
+pub enum CornerShape {
+    /// Square corners.
+    Square,
+    /// Round corners, with resolution per corner.
+    Round(f64, u32),
+    /// Bevel corners.
+    Bevel(f64)
+}
+
 /* --- --- --- Geometry2D --- --- --- */
 
 /// All supported primitives inside the two dimensional space.
@@ -1013,12 +1039,14 @@ pub enum Geometry2D {
         points: [Position2D; 2],
         line_color: Color,
         line_width: f64,
+        line_shape: LineShape,
         transformations: Transformations2D,
     },
     Polyline {
         points: Vec<Position2D>,
         line_color: Color,
         line_width: f64,
+        line_shape: LineShape,
         transformations: Transformations2D,
     },
     Triangle {
@@ -1034,6 +1062,7 @@ pub enum Geometry2D {
         fill_color: Color,
         border_color: Color,
         border_width: f64,
+        corner_shape: CornerShape,
         transformations: Transformations2D,
     },
     Rectangle {
@@ -1042,6 +1071,7 @@ pub enum Geometry2D {
         fill_color: Color,
         border_color: Color,
         border_width: f64,
+        corner_shape: CornerShape,
         transformations: Transformations2D,
     },
     Polygon {
@@ -1086,6 +1116,7 @@ impl Geometry2D {
             points: [start, end],
             line_color: Color::black(),
             line_width: 0.01f64,
+            line_shape: LineShape::Square,
             transformations: Transformations2D::default(),
         }
     }
@@ -1095,6 +1126,7 @@ impl Geometry2D {
             points,
             line_color: Color::black(),
             line_width: 0.01f64,
+            line_shape: LineShape::Square,
             transformations: Transformations2D::default(),
         }
     }
@@ -1116,6 +1148,7 @@ impl Geometry2D {
             fill_color: Color::black(),
             border_color: Color::black(),
             border_width: 0.01f64,
+            corner_shape: CornerShape::Square,
             transformations: Transformations2D::default(),
         }
     }
@@ -1127,6 +1160,7 @@ impl Geometry2D {
             fill_color: Color::black(),
             border_color: Color::black(),
             border_width: 0.01f64,
+            corner_shape: CornerShape::Square,
             transformations: Transformations2D::default(),
         }
     }
@@ -1266,14 +1300,18 @@ impl Geometry2D {
         match self {
             p @ Self::Point{ .. } => p,
             Self::Line {
-                points, line_width, transformations, ..
+                points, line_width, line_shape,
+                transformations, ..
             } => Self::Line {
-                points, line_color: new_line_or_border_color, line_width, transformations
+                points, line_color: new_line_or_border_color, line_width, line_shape,
+                transformations
             },
             Self::Polyline {
-                points, line_width, transformations, ..
+                points, line_width, line_shape,
+                transformations, ..
             } => Self::Polyline {
-                points, line_color: new_line_or_border_color, line_width, transformations
+                points, line_color: new_line_or_border_color, line_width, line_shape,
+                transformations
             },
             Self::Triangle {
                 points, fill_color, border_width,
@@ -1284,17 +1322,17 @@ impl Geometry2D {
             },
             Self::Square {
                 center_position, edge_length, fill_color, border_width,
-                transformations, ..
+                corner_shape, transformations, ..
             } => Self::Square {
                 center_position, edge_length, fill_color, border_color: new_line_or_border_color,
-                border_width, transformations
+                border_width, corner_shape, transformations
             },
             Self::Rectangle {
                 center_position, size, fill_color,
-                border_width, transformations, ..
+                border_width, corner_shape, transformations, ..
             } => Self::Rectangle {
                 center_position, size, fill_color, border_color: new_line_or_border_color,
-                border_width, transformations
+                border_width, corner_shape, transformations
             },
             Self::Polygon {
                 points, fill_color, border_width, transformations, ..
@@ -1328,14 +1366,18 @@ impl Geometry2D {
         match self {
             p @ Self::Point { .. } => p,
             Self::Line {
-                points, line_color, transformations, ..
+                points, line_color, line_shape,
+                transformations, ..
             } => Self::Line {
-                points, line_color, line_width: new_line_or_border_width, transformations
+                points, line_color, line_width: new_line_or_border_width, line_shape,
+                transformations
             },
             Self::Polyline {
-                points, line_color, transformations, ..
+                points, line_color, line_shape,
+                transformations, ..
             } => Self::Polyline {
-                points, line_color, line_width: new_line_or_border_width, transformations
+                points, line_color, line_width: new_line_or_border_width, line_shape,
+                transformations
             },
             Self::Triangle {
                 points, fill_color, border_color,
@@ -1346,17 +1388,17 @@ impl Geometry2D {
             },
             Self::Square {
                 center_position, edge_length, fill_color, border_color,
-                transformations, ..
+                corner_shape, transformations, ..
             } => Self::Square {
                 center_position, edge_length, fill_color, border_color,
-                border_width: new_line_or_border_width, transformations
+                border_width: new_line_or_border_width, corner_shape, transformations
             },
             Self::Rectangle {
                 center_position, size, fill_color, border_color,
-                transformations, ..
+                corner_shape, transformations, ..
             } => Self::Rectangle {
                 center_position, size, fill_color, border_color,
-                border_width: new_line_or_border_width, transformations
+                border_width: new_line_or_border_width, corner_shape, transformations
             },
             Self::Polygon {
                 points, fill_color, border_color,
@@ -1385,6 +1427,44 @@ impl Geometry2D {
         }
     }
 
+    pub fn line_shape(self, new_line_shape: LineShape) -> Self {
+        match self {
+            Self::Line {
+                points, line_color, line_width,
+                transformations, ..
+            } => Self::Line {
+                points, line_color, line_width, line_shape: new_line_shape, transformations
+            },
+            Self::Polyline {
+                points, line_color, line_width,
+                transformations, ..
+            } => Self::Polyline {
+                points, line_color, line_width, line_shape: new_line_shape, transformations
+            },
+            g => g,
+        }
+    }
+
+    pub fn corner_shape(self, new_corner_shape: CornerShape) -> Self {
+        match self {
+            Self::Square {
+                center_position, edge_length, fill_color, border_color,
+                border_width, transformations, ..
+            } => Self::Square {
+                center_position, edge_length, fill_color, border_color, border_width,
+                corner_shape: new_corner_shape, transformations
+            },
+            Self::Rectangle {
+                center_position, size, fill_color, border_color,
+                border_width, transformations, ..
+            } => Self::Rectangle {
+                center_position, size, fill_color, border_color, border_width,
+                corner_shape: new_corner_shape, transformations
+            },
+            g => g,
+        }
+    }
+
     pub fn fill_color(self, new_fill_color: Color) -> Self {
         match self {
             Self::Point {
@@ -1402,17 +1482,17 @@ impl Geometry2D {
             },
             Self::Square {
                 center_position, edge_length, border_color, border_width,
-                transformations, ..
+                corner_shape, transformations, ..
             } => Self::Square {
                 center_position, edge_length, fill_color: new_fill_color, border_color,
-                border_width, transformations
+                border_width, corner_shape, transformations
             },
             Self::Rectangle {
                 center_position, size, border_color, border_width,
-                transformations, ..
+                corner_shape, transformations, ..
             } => Self::Rectangle {
                 center_position, size, fill_color: new_fill_color, border_color, border_width,
-                transformations
+                corner_shape, transformations
             },
             Self::Polygon {
                 points, border_color, border_width,
@@ -1453,17 +1533,19 @@ impl Geometry2D {
                 }
             },
             Self::Line {
-                points, line_color, line_width, mut transformations
+                points, line_color, line_width, line_shape,
+                mut transformations
             } => Self::Line {
-                points, line_color, line_width, transformations: {
+                points, line_color, line_width, line_shape, transformations: {
                     transformations.transformations.push(transformation);
                     transformations
                 },
             },
             Self::Polyline {
-                points, line_color, line_width, mut transformations
+                points, line_color, line_width, line_shape,
+                mut transformations
             } => Self::Polyline {
-                points, line_color, line_width, transformations: {
+                points, line_color, line_width, line_shape, transformations: {
                     transformations.transformations.push(transformation);
                     transformations
                 }
@@ -1479,19 +1561,20 @@ impl Geometry2D {
             },
             Self::Square {
                 center_position, edge_length, fill_color, border_color,
-                border_width, mut transformations
+                border_width, corner_shape, mut transformations
             } => Self::Square {
                 center_position, edge_length, fill_color, border_color, border_width,
-                transformations: {
+                corner_shape, transformations: {
                     transformations.transformations.push(transformation);
                     transformations
                 }
             },
             Self::Rectangle {
                 center_position, size, fill_color, border_color,
-                border_width, mut transformations
+                border_width, corner_shape, mut transformations
             } => Self::Rectangle {
-                center_position, size, fill_color, border_color, border_width, transformations: {
+                center_position, size, fill_color, border_color, border_width, corner_shape,
+                transformations: {
                     transformations.transformations.push(transformation);
                     transformations
                 }
