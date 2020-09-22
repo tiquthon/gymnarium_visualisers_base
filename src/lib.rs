@@ -1103,6 +1103,9 @@ pub enum Geometry2D {
 }
 
 impl Geometry2D {
+    /// Creates a new point at the given position.
+    ///
+    /// Defaults are `color: Color::black()`.
     pub fn point(position: Position2D) -> Self {
         Self::Point {
             position,
@@ -1111,92 +1114,125 @@ impl Geometry2D {
         }
     }
 
+    /// Creates a new line between the given positions.
+    ///
+    /// Defaults are `color: Color::black()`, `line_width: 1f64` and
+    /// `line_shape: LineShape::Square`.
     pub fn line(start: Position2D, end: Position2D) -> Self {
         Self::Line {
             points: [start, end],
             line_color: Color::black(),
-            line_width: 0.01f64,
+            line_width: 1f64,
             line_shape: LineShape::Square,
             transformations: Transformations2D::default(),
         }
     }
 
+    /// Creates a new polyline with the given positions.
+    ///
+    /// Defaults are `color: Color::black()`, `line_width: 1f64` and
+    /// `line_shape: LineShape::Square`.
     pub fn polyline(points: Vec<Position2D>) -> Self {
         Self::Polyline {
             points,
             line_color: Color::black(),
-            line_width: 0.01f64,
+            line_width: 1f64,
             line_shape: LineShape::Square,
             transformations: Transformations2D::default(),
         }
     }
 
+    /// Creates a new triangle with the given three positions.
+    ///
+    /// Defaults are `fill_color: Color::black()`, `border_color: Color::transparent()` and
+    /// `border_width: 0f64`.
     pub fn triangle(position_a: Position2D, position_b: Position2D, position_c: Position2D) -> Self {
         Self::Triangle {
             points: [position_a, position_b, position_c],
             fill_color: Color::black(),
-            border_color: Color::black(),
-            border_width: 0.01f64,
+            border_color: Color::transparent(),
+            border_width: 0f64,
             transformations: Transformations2D::default(),
         }
     }
 
+    /// Creates a new square with the given center position and edge length.
+    ///
+    /// Defaults are `fill_color: Color::black()`, `border_color: Color::transparent()`,
+    /// `border_width: 0f64` and `corner_shape: CornerShape::Square`.
     pub fn square(center_position: Position2D, edge_length: f64) -> Self {
         Self::Square {
             center_position,
             edge_length,
             fill_color: Color::black(),
-            border_color: Color::black(),
-            border_width: 0.01f64,
+            border_color: Color::transparent(),
+            border_width: 0f64,
             corner_shape: CornerShape::Square,
             transformations: Transformations2D::default(),
         }
     }
 
+    /// Creates a new rectangle with the given center position and size.
+    ///
+    /// Defaults are `fill_color: Color::black()`, `border_color: Color::transparent()`,
+    /// `border_width: 0f64` and `corner_shape: CornerShape::Square`.
     pub fn rectangle(center_position: Position2D, size: Size2D) -> Self {
         Self::Rectangle {
             center_position,
             size,
             fill_color: Color::black(),
-            border_color: Color::black(),
-            border_width: 0.01f64,
+            border_color: Color::transparent(),
+            border_width: 0f64,
             corner_shape: CornerShape::Square,
             transformations: Transformations2D::default(),
         }
     }
 
+    /// Creates a new polygon with the given positions.
+    ///
+    /// Defaults are `fill_color: Color::black()`, `border_color: Color::transparent()` and
+    /// `border_width: 0f64`.
     pub fn polygon(points: Vec<Position2D>) -> Self {
         Self::Polygon {
             points,
             fill_color: Color::black(),
-            border_color: Color::black(),
-            border_width: 0.01f64,
+            border_color: Color::transparent(),
+            border_width: 0f64,
             transformations: Transformations2D::default(),
         }
     }
 
+    /// Creates a new circle with the given center position and radius.
+    ///
+    /// Defaults are `fill_color: Color::black()`, `border_color: Color::transparent()` and
+    /// `border_width: 0f64`.
     pub fn circle(center_position: Position2D, radius: f64) -> Self {
         Self::Circle {
             center_position,
             radius,
             fill_color: Color::black(),
-            border_color: Color::black(),
-            border_width: 0.01f64,
+            border_color: Color::transparent(),
+            border_width: 0f64,
             transformations: Transformations2D::default(),
         }
     }
 
+    /// Creates a new ellipse with the given center position and size.
+    ///
+    /// Defaults are `fill_color: Color::black()`, `border_color: Color::transparent()` and
+    /// `border_width: 0f64`.
     pub fn ellipse(center_position: Position2D, size: Size2D) -> Self {
         Self::Ellipse {
             center_position,
             size,
             fill_color: Color::black(),
-            border_color: Color::black(),
-            border_width: 0.01f64,
+            border_color: Color::transparent(),
+            border_width: 0f64,
             transformations: Transformations2D::default(),
         }
     }
 
+    /// Creates a new group with the given geometries.
     pub fn group(geometries: Vec<Geometry2D>) -> Self {
         Self::Group(geometries)
     }
