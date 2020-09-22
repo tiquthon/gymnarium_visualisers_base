@@ -1,7 +1,7 @@
 //! Mainly copied from https://docs.piston.rs/piston_window/piston_window/enum.Input.html
 
-use std::path::PathBuf;
 use std::cmp::Ordering;
+use std::path::PathBuf;
 
 /// Models input events.
 #[derive(Clone, Debug, PartialEq, PartialOrd, Deserialize, Serialize)]
@@ -661,10 +661,7 @@ impl ControllerButton {
     /// Create a new ControllerButton object. Intended for use by backends when
     /// emitting events.
     pub fn new(id: u32, button: u8) -> Self {
-        ControllerButton {
-            id,
-            button,
-        }
+        ControllerButton { id, button }
     }
 }
 
@@ -683,9 +680,7 @@ impl ControllerHat {
     /// Create a new ControllerButton object. Intended for use by backends when
     /// emitting events.
     pub fn new(id: u32, which: u8, state: HatState) -> Self {
-        ControllerHat {
-            id, state, which,
-        }
+        ControllerHat { id, state, which }
     }
 }
 
@@ -744,11 +739,7 @@ impl ControllerAxisArgs {
     /// Create a new ControllerAxisArgs object. Intended for use by backends when
     /// emitting events.
     pub fn new(id: u32, axis: u8, position: f64) -> Self {
-        ControllerAxisArgs {
-            id,
-            axis,
-            position,
-        }
+        ControllerAxisArgs { id, axis, position }
     }
 }
 
@@ -794,12 +785,13 @@ impl TouchArgs {
     /// Creates arguments for 3D touch.
     ///
     /// The pressure direction vector should have maximum length 1.
-    pub fn new_3d(device: i64,
-                  id: i64,
-                  position_3d: [f64; 3],
-                  pressure_3d: [f64; 3],
-                  touch: Touch)
-                  -> TouchArgs {
+    pub fn new_3d(
+        device: i64,
+        id: i64,
+        position_3d: [f64; 3],
+        pressure_3d: [f64; 3],
+        touch: Touch,
+    ) -> TouchArgs {
         TouchArgs {
             device,
             id,
@@ -816,7 +808,9 @@ impl TouchArgs {
     }
 
     /// The position of the touch in 3D.
-    pub fn position_3d(&self) -> [f64; 3] {self.position_3d}
+    pub fn position_3d(&self) -> [f64; 3] {
+        self.position_3d
+    }
 
     /// The pressure magnitude, normalized 0..1.
     pub fn pressure(&self) -> f64 {
@@ -827,7 +821,9 @@ impl TouchArgs {
     }
 
     /// The pressure vector in 3D.
-    pub fn pressure_3d(&self) -> [f64; 3] {self.pressure_3d}
+    pub fn pressure_3d(&self) -> [f64; 3] {
+        self.pressure_3d
+    }
 }
 
 /// Stores the touch state.
