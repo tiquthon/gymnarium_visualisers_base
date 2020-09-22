@@ -6,11 +6,15 @@
 
 #[macro_use]
 extern crate serde_derive;
+extern crate gymnarium_base;
 extern crate serde;
 
 use std::error::Error;
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
+use std::marker::PhantomData;
 use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Sub};
+
+use gymnarium_base::{Agent, AgentAction, EnvironmentState, Seed};
 
 pub mod input;
 
@@ -2313,6 +2317,103 @@ pub enum Viewport2DModification {
 impl Default for Viewport2DModification {
     fn default() -> Self {
         Self::LooseAspectRatio
+    }
+}
+
+/* --- --- --- InputProvider --- --- --- */
+
+/// Trait to use for the InputAgent or any other Agent.
+pub trait InputProvider {
+    fn clear(&mut self);
+    fn peek(&self) -> Option<input::Input>;
+    fn pop(&mut self) -> Option<input::Input>;
+    fn pop_all(&mut self) -> Vec<input::Input>;
+}
+
+/* --- --- --- InputAgentError --- --- --- */
+
+#[derive(Debug)]
+pub enum InputAgentError<TAMError: Error> {
+    ToActionMapperError(TAMError),
+}
+
+impl<TAMError: Error> Display for InputAgentError<TAMError> {
+    fn fmt(&self, _f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        unimplemented!()
+    }
+}
+
+impl<TAMError: Error> Error for InputAgentError<TAMError> {}
+
+impl<TAMError: Error> From<TAMError> for InputAgentError<TAMError> {
+    fn from(error: TAMError) -> Self {
+        Self::ToActionMapperError(error)
+    }
+}
+
+/* --- --- --- InputAgent --- --- --- */
+
+pub struct InputAgent<
+    IP: InputProvider,
+    TAMError: Error,
+    TAM: gymnarium_base::ToActionMapper<Vec<input::Input>, TAMError>,
+> {
+    input_provider: IP,
+    to_action_mapper: TAM,
+    phantom: PhantomData<TAMError>,
+}
+
+impl<
+        IP: InputProvider,
+        TAMError: Error,
+        TAM: gymnarium_base::ToActionMapper<Vec<input::Input>, TAMError>,
+    > InputAgent<IP, TAMError, TAM>
+{
+    pub fn new(input_provider: IP, to_action_mapper: TAM) -> Self {
+        Self {
+            input_provider,
+            to_action_mapper,
+            phantom: PhantomData,
+        }
+    }
+}
+
+impl<
+        IP: InputProvider,
+        TAMError: Error,
+        TAM: gymnarium_base::ToActionMapper<Vec<input::Input>, TAMError>,
+    > Agent<InputAgentError<TAMError>> for InputAgent<IP, TAMError, TAM>
+{
+    fn reseed(&mut self, _random_seed: Option<Seed>) -> Result<(), InputAgentError<TAMError>> {
+        Ok(())
+    }
+
+    fn reset(&mut self) -> Result<(), InputAgentError<TAMError>> {
+        self.input_provider.clear();
+        Ok(())
+    }
+
+    fn choose_action(
+        &mut self,
+        _state: &EnvironmentState,
+    ) -> Result<AgentAction, InputAgentError<TAMError>> {
+        self.to_action_mapper
+            .map(&self.input_provider.pop_all())
+            .map_err(|e| e.into())
+    }
+
+    fn process_reward(
+        &mut self,
+        _old_state: &EnvironmentState,
+        _new_state: &EnvironmentState,
+        _reward: f64,
+        _is_done: bool,
+    ) -> Result<(), InputAgentError<TAMError>> {
+        Ok(())
+    }
+
+    fn close(&mut self) -> Result<(), InputAgentError<TAMError>> {
+        Ok(())
     }
 }
 
