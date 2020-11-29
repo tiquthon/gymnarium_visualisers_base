@@ -1564,7 +1564,7 @@ impl<
         IP: InputProvider,
         TAMError: Error,
         TAM: gymnarium_base::ToActionMapper<Vec<input::Input>, TAMError>,
-    > Agent<InputAgentError<TAMError>> for InputAgent<IP, TAMError, TAM>
+    > Agent<InputAgentError<TAMError>, InputAgentStorage> for InputAgent<IP, TAMError, TAM>
 {
     fn reseed(&mut self, _random_seed: Option<Seed>) -> Result<(), InputAgentError<TAMError>> {
         Ok(())
@@ -1594,10 +1594,21 @@ impl<
         Ok(())
     }
 
+    fn load(&mut self, _: InputAgentStorage) -> Result<(), InputAgentError<TAMError>> {
+        Ok(())
+    }
+
+    fn store(&self) -> InputAgentStorage {
+        InputAgentStorage {}
+    }
+
     fn close(&mut self) -> Result<(), InputAgentError<TAMError>> {
         Ok(())
     }
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct InputAgentStorage;
 
 /* --- --- --- Visualiser --- --- --- */
 

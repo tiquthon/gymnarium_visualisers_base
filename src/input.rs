@@ -1,4 +1,4 @@
-//! Mainly copied from https://docs.piston.rs/piston_window/piston_window/enum.Input.html
+//! Mainly copied from <https://docs.piston.rs/piston_window/piston_window/enum.Input.html>
 
 use std::cmp::Ordering;
 use std::path::PathBuf;
@@ -34,12 +34,12 @@ pub struct ButtonArgs {
     /// An optional scancode that tells the physical layout of a keyboard key.
     /// For other devices than keyboard, this is set to `None`.
     ///
-    /// Scancode follows SDL (https://wiki.libsdl.org/SDL_Scancode).
+    /// Scancode follows SDL (<https://wiki.libsdl.org/SDL_Scancode>).
     ///
     /// This is stored here to make `Button` equality check work with keyboard layouts.
     ///
     /// Some window backends might not support scancodes.
-    /// To test a window backend, use https://github.com/PistonDevelopers/piston-examples/tree/master/user_input
+    /// To test a window backend, use <https://github.com/PistonDevelopers/piston-examples/tree/master/user_input>
     pub scancode: Option<i32>,
 }
 
@@ -66,7 +66,7 @@ pub enum Button {
 }
 
 /// Represent a keyboard key.
-/// Keycodes follows SDL http://wiki.libsdl.org/SDLKeycodeLookup
+/// Keycodes follows SDL <http://wiki.libsdl.org/SDLKeycodeLookup>
 // Allowing clippy::derive_has_xor_eq, because I didn't create this code and it worked there.
 #[allow(missing_docs, clippy::derive_hash_xor_eq)]
 #[derive(Copy, Clone, Deserialize, Serialize, Debug, Hash)]
