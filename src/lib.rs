@@ -1394,10 +1394,9 @@ impl Geometry2D {
     }
 
     pub fn transform(self, source_viewport: &Viewport2D, target_viewport: &Viewport2D) -> Self {
-        let mut transformations = Vec::new();
-        transformations.push(Transformation2D::translation(
+        let mut transformations = vec![Transformation2D::translation(
             source_viewport.center.vector_to(&Position2D::zero()),
-        ));
+        )];
         if source_viewport.flipped_y_axis != target_viewport.flipped_y_axis {
             transformations.push(Transformation2D::reflection_y());
         }
