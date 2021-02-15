@@ -16,7 +16,7 @@ use std::marker::PhantomData;
 use std::ops::{Index, IndexMut};
 
 use gymnarium_base::math::{Position2D, Size2D, Transformation2D, Transformations2D, Vector2D};
-use gymnarium_base::{Agent, AgentAction, EnvironmentState, Seed};
+use gymnarium_base::{Agent, AgentAction, EnvironmentState, Reward, Seed};
 
 pub mod input;
 
@@ -1561,9 +1561,10 @@ impl<
 
 impl<
         IP: InputProvider,
+        R: Reward,
         TAMError: Error,
         TAM: gymnarium_base::ToActionMapper<Vec<input::Input>, TAMError>,
-    > Agent<InputAgentError<TAMError>, InputAgentStorage> for InputAgent<IP, TAMError, TAM>
+    > Agent<InputAgentError<TAMError>, R, InputAgentStorage> for InputAgent<IP, TAMError, TAM>
 {
     fn reseed(&mut self, _random_seed: Option<Seed>) -> Result<(), InputAgentError<TAMError>> {
         Ok(())
@@ -1586,8 +1587,9 @@ impl<
     fn process_reward(
         &mut self,
         _old_state: &EnvironmentState,
+        _last_action: &AgentAction,
         _new_state: &EnvironmentState,
-        _reward: f64,
+        _reward: R,
         _is_done: bool,
     ) -> Result<(), InputAgentError<TAMError>> {
         Ok(())
