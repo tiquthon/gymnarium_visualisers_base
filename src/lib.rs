@@ -3,8 +3,6 @@
 //! `gymnarium_visualisers_base` is a collection of structs, traits and enums to support creating
 //! visualisations for reinforcement environments within the gymnarium libraries.
 
-#![feature(iterator_fold_self)]
-
 #[macro_use]
 extern crate serde_derive;
 extern crate gymnarium_base;
@@ -619,7 +617,7 @@ impl Geometry2D {
             } => points
                 .iter()
                 .map(|a| a.transform(transformations))
-                .fold_first(merge_two_positions),
+                .reduce(merge_two_positions),
             Self::Triangle {
                 points,
                 transformations,
@@ -644,7 +642,7 @@ impl Geometry2D {
             ]
             .iter()
             .map(|a| a.transform(transformations))
-            .fold_first(merge_two_positions),
+            .reduce(merge_two_positions),
             Self::Rectangle {
                 center_position,
                 size,
@@ -658,7 +656,7 @@ impl Geometry2D {
             ]
             .iter()
             .map(|a| a.transform(transformations))
-            .fold_first(merge_two_positions),
+            .reduce(merge_two_positions),
             Self::Polygon {
                 points,
                 transformations,
@@ -666,7 +664,7 @@ impl Geometry2D {
             } => points
                 .iter()
                 .map(|a| a.transform(transformations))
-                .fold_first(merge_two_positions),
+                .reduce(merge_two_positions),
             Self::Circle {
                 center_position,
                 radius,
@@ -680,7 +678,7 @@ impl Geometry2D {
             ]
             .iter()
             .map(|a| a.transform(transformations))
-            .fold_first(merge_two_positions),
+            .reduce(merge_two_positions),
             Self::Ellipse {
                 center_position,
                 size,
@@ -694,7 +692,7 @@ impl Geometry2D {
             ]
             .iter()
             .map(|a| a.transform(transformations))
-            .fold_first(merge_two_positions),
+            .reduce(merge_two_positions),
             Self::Image {
                 center_position,
                 size,
@@ -708,7 +706,7 @@ impl Geometry2D {
             ]
             .iter()
             .map(|a| a.transform(transformations))
-            .fold_first(merge_two_positions),
+            .reduce(merge_two_positions),
             Self::Group(geometries) => geometries
                 .iter()
                 .map(|geometry| {
@@ -716,7 +714,7 @@ impl Geometry2D {
                 })
                 .filter(|position| position.is_some())
                 .map(|position| position.unwrap())
-                .fold_first(merge_two_positions),
+                .reduce(merge_two_positions),
         }
     }
 }
